@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Upload UI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .upload-area {
+            border: 3px dashed #3498db;
+            border-radius: 10px;
+            padding: 40px 20px;
+            margin: 30px 0;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            background-color: #e3f2fd;
+            border-color: #2980b9;
+        }
+        
+        .upload-area.active {
+            background-color: #e1f5fe;
+            border-color: #0277bd;
+        }
+        
+        .upload-icon {
+            font-size: 60px;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .browse-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .browse-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .file-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+            display: none;
+        }
+        
+        .file-info.show {
+            display: block;
+        }
+        
+        .file-details {
+            margin-bottom: 10px;
+        }
+        
+        .upload-btn {
+            background-color: #2ecc71;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        
+        .upload-btn:hover {
+            background-color: #27ae60;
+        }
+        
+        .upload-btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .progress-container.show {
+            display: block;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: #3498db;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .file-size-limit {
+            margin-top: 10px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CSV File Upload</h1>
+        <p class="subtitle">Upload your CSV files for migration processing</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <p class="upload-text">Drag & drop your CSV file here</p>
+            <p class="upload-text">OR</p>
+            <button class="browse-btn" id="browseBtn">Browse Files</button>
+            <input type="file" id="fileInput" class="file-input" accept=".csv">
+        </div>
+        
+        <p class="file-size-limit">Maximum file size: 500MB | Only CSV files accepted</p>
+        
+        <div class="file-info" id="fileInfo">
+            <div class="file-details">
+                <strong>Selected File:</strong> <span id="fileName"></span>
+            </div>
+            <div class="file-details">
+                <strong>File Size:</strong> <span id="fileSize"></span>
+            </div>
+            <div class="file-details">
+                <strong>File Type:</strong> <span id="fileType"></span>
+            </div>
+        </div>
+        
+        <button class="upload-btn" id="uploadBtn" disabled>Upload File</button>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <p id="progressText">Uploading... 0%</p>
+        </div>
+        
+        <div class="status" id="statusMessage"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+            const browseBtn = document.getElementById('browseBtn');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const fileType = document.getElementById('fileType');
+            const statusMessage = document.getElementById('statusMessage');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            // Event listeners for file selection
+            browseBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    handleFile(this.files[0]);
+                }
+            });
+            
+            // Drag and drop functionality
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                uploadArea.classList.add('active');
+            }
+            
+            function unhighlight() {
+                uploadArea.classList.remove('active');
+            }
+            
+            uploadArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length) {
+                    handleFile(files[0]);
+                }
+            }
+            
+            function handleFile(file) {
+                // Check if file is CSV
+                if (!file.name.toLowerCase().endsWith('.csv')) {
+                    showStatus('Please select a CSV file.', 'error');
+                    return;
+                }
+                
+                // Update file info display
+                fileName.textContent = file.name;
+                fileSize.textContent = formatFileSize(file.size);
+                fileType.textContent = file.type || 'text/csv';
+                
+                fileInfo.classList.add('show');
+                uploadBtn.disabled = false;
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            uploadBtn.addEventListener('click', uploadFile);
+            
+            async function uploadFile() {
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    showStatus('Please select a file first.', 'error');
+                    return;
+                }
+                
+                // Check if file is CSV
+                if (!file.name.toLowerCase().endsWith('.csv')) {
+                    showStatus('Only CSV files are allowed!', 'error');
+                    return;
+                }
+                
+                // Show progress
+                progressContainer.classList.add('show');
+                uploadBtn.disabled = true;
+                statusMessage.style.display = 'none';
+                
+                const formData = new FormData();
+                formData.append('csvFile', file);
+                
+                try {
+                    // Simulate progress (since we can't easily track actual progress with this setup)
+                    let progress = 0;
+                    const interval = setInterval(() => {
+                        progress += Math.random() * 10;
+                        if (progress >= 100) {
+                            progress = 100;
+                            clearInterval(interval);
+                        }
+                        updateProgress(progress);
+                    }, 200);
+                    
+                    const response = await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    clearInterval(interval);
+                    
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        updateProgress(100);
+                        showStatus(`File uploaded successfully! Filename: ${result.originalName}`, 'success');
+                        
+                        // Reset form after successful upload
+                        setTimeout(() => {
+                            fileInput.value = '';
+                            fileInfo.classList.remove('show');
+                            uploadBtn.disabled = true;
+                            progressContainer.classList.remove('show');
+                        }, 2000);
+                    } else {
+                        showStatus(`Upload failed: ${result.error}`, 'error');
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    showStatus(`Upload failed: ${error.message}`, 'error');
+                } finally {
+                    uploadBtn.disabled = false;
+                }
+            }
+            
+            function updateProgress(percent) {
+                progressBar.style.width = percent + '%';
+                progressText.textContent = `Uploading... ${Math.round(percent)}%`;
+            }
+            
+            function showStatus(message, type) {
+                statusMessage.textContent = message;
+                statusMessage.className = 'status ' + type;
+            }
+        });
+    </script>
+</body>
+</html>
