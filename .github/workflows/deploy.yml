@@ -21,10 +21,10 @@ jobs:
         cache: 'npm'
     
     - name: Install dependencies
-      run: npm install
+      run: npm ci
     
     - name: Run tests
-      run: npm test || echo "No tests defined"
+      run: npm test
     
     - name: Build application
       run: npm run build || echo "No build script defined"
