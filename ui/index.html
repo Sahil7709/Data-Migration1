@@ -1,204 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CSV to MongoDB Migration System</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
 
-        .container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
 
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-        }
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+      }
 
-        .upload-section {
-            margin-bottom: 30px;
-            padding: 20px;
-            border: 2px dashed #ddd;
-            border-radius: 5px;
-            text-align: center;
-        }
+      .upload-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 2px dashed #ddd;
+        border-radius: 5px;
+        text-align: center;
+      }
 
-        .file-input {
-            margin: 20px 0;
-        }
+      .file-input {
+        margin: 20px 0;
+      }
 
-        .file-input input[type="file"] {
-            display: none;
-        }
+      .file-input input[type="file"] {
+        display: none;
+      }
 
-        .file-label {
-            display: inline-block;
-            padding: 12px 24px;
-            background: #007bff;
-            color: white;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
+      .file-label {
+        display: inline-block;
+        padding: 12px 24px;
+        background: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
 
-        .file-label:hover {
-            background: #0056b3;
-        }
+      .file-label:hover {
+        background: #0056b3;
+      }
 
-        .preview-section {
-            margin-bottom: 30px;
-            display: none;
-        }
+      .preview-section {
+        margin-bottom: 30px;
+        display: none;
+      }
 
-        .preview-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
+      .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
 
-        .preview-table th,
-        .preview-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
+      .preview-table th,
+      .preview-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
 
-        .preview-table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
+      .preview-table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+      }
 
-        .preview-table tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
+      .preview-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
 
-        .upload-btn {
-            background: #28a745;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 10px;
-        }
+      .upload-btn {
+        background: #28a745;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 10px;
+      }
 
-        .upload-btn:hover {
-            background: #218838;
-        }
+      .upload-btn:hover {
+        background: #218838;
+      }
 
-        .upload-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
+      .upload-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
 
-        .progress-section {
-            margin-bottom: 30px;
-            display: none;
-        }
+      .progress-section {
+        margin-bottom: 30px;
+        display: none;
+      }
 
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background-color: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 10px 0;
-        }
+      .progress-bar {
+        width: 100%;
+        height: 20px;
+        background-color: #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 10px 0;
+      }
 
-        .progress-fill {
-            height: 100%;
-            background-color: #007bff;
-            transition: width 0.3s ease;
-        }
+      .progress-fill {
+        height: 100%;
+        background-color: #007bff;
+        transition: width 0.3s ease;
+      }
 
-        .progress-text {
-            text-align: center;
-            font-weight: bold;
-            margin: 10px 0;
-        }
+      .progress-text {
+        text-align: center;
+        font-weight: bold;
+        margin: 10px 0;
+      }
 
-        .logs-section {
-            margin-bottom: 30px;
-        }
+      .logs-section {
+        margin-bottom: 30px;
+      }
 
-        .logs-container {
-            height: 300px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 10px;
-            background-color: #f8f9fa;
-            font-family: monospace;
-        }
+      .logs-container {
+        height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        background-color: #f8f9fa;
+        font-family: monospace;
+      }
 
-        .log-entry {
-            margin: 5px 0;
-            padding: 5px;
-            border-bottom: 1px solid #eee;
-        }
+      .log-entry {
+        margin: 5px 0;
+        padding: 5px;
+        border-bottom: 1px solid #eee;
+      }
 
-        .log-entry.START { color: #007bff; }
-        .log-entry.INSERT { color: #28a745; }
-        .log-entry.SKIP { color: #ffc107; }
-        .log-entry.DONE { color: #17a2b8; }
-        .log-entry.error { color: #dc3545; }
+      .log-entry.START {
+        color: #007bff;
+      }
+      .log-entry.INSERT {
+        color: #28a745;
+      }
+      .log-entry.SKIP {
+        color: #ffc107;
+      }
+      .log-entry.DONE {
+        color: #17a2b8;
+      }
+      .log-entry.error {
+        color: #dc3545;
+      }
 
-        .status-section {
-            text-align: center;
-            padding: 20px;
-            margin: 20px 0;
-        }
+      .status-section {
+        text-align: center;
+        padding: 20px;
+        margin: 20px 0;
+      }
 
-        .success-message {
-            color: #28a745;
-            font-size: 18px;
-            font-weight: bold;
-        }
+      .success-message {
+        color: #28a745;
+        font-size: 18px;
+        font-weight: bold;
+      }
 
-        .error-message {
-            color: #dc3545;
-            font-size: 18px;
-            font-weight: bold;
-        }
+      .error-message {
+        color: #dc3545;
+        font-size: 18px;
+        font-weight: bold;
+      }
 
-        .next-upload-btn {
-            background: #007bff;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            display: none;
-        }
+      .next-upload-btn {
+        background: #007bff;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        display: none;
+      }
 
-        .next-upload-btn:hover {
-            background: #0056b3;
-        }
+      .next-upload-btn:hover {
+        background: #0056b3;
+      }
 
-        .hidden {
-            display: none;
-        }
+      .hidden {
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
         <h1>CSV to MongoDB Migration System</h1>
         
@@ -218,26 +228,6 @@
         <div class="preview-section" id="previewSection">
             <h2>CSV Preview (First 10 Rows)</h2>
             <div id="previewTable"></div>
-            
-            <h3 style="margin-top: 20px;">Field Configuration</h3>
-            <div id="fieldConfigSection">
-                <div style="margin-bottom: 15px;">
-                    <label>
-                        <input type="radio" name="fieldMode" value="all" checked> Include all fields
-                    </label><br>
-                    <label>
-                        <input type="radio" name="fieldMode" value="include"> Include only selected fields
-                    </label><br>
-                    <label>
-                        <input type="radio" name="fieldMode" value="exclude"> Exclude selected fields
-                    </label>
-                </div>
-                <div id="fieldSelection" style="display: none;">
-                    <p>Select fields to include/exclude:</p>
-                    <div id="fieldCheckboxes" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
-                </div>
-            </div>
-            
             <button id="uploadBtn" class="upload-btn">Upload to MongoDB</button>
         </div>
         
@@ -261,43 +251,78 @@
     </div>
 
     <script>
-        // DOM Elements
-        const csvFileInput = document.getElementById('csvFile');
-        const fileNameDiv = document.getElementById('fileName');
-        const previewBtn = document.getElementById('previewBtn');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const previewSection = document.getElementById('previewSection');
-        const previewTable = document.getElementById('previewTable');
-        const progressSection = document.getElementById('progressSection');
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
-        const logsContainer = document.getElementById('logsContainer');
-        const statusSection = document.getElementById('statusSection');
-        const statusMessage = document.getElementById('statusMessage');
-        const nextUploadBtn = document.getElementById('nextUploadBtn');
-        const uploadSection = document.getElementById('uploadSection');
+      // DOM Elements
+      const csvFileInput = document.getElementById("csvFile");
+      const fileNameDiv = document.getElementById("fileName");
+      const previewBtn = document.getElementById("previewBtn");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const previewSection = document.getElementById("previewSection");
+      const previewTable = document.getElementById("previewTable");
+      const progressSection = document.getElementById("progressSection");
+      const progressFill = document.getElementById("progressFill");
+      const progressText = document.getElementById("progressText");
+      const logsContainer = document.getElementById("logsContainer");
+      const statusSection = document.getElementById("statusSection");
+      const statusMessage = document.getElementById("statusMessage");
+      const nextUploadBtn = document.getElementById("nextUploadBtn");
+      const uploadSection = document.getElementById("uploadSection");
 
-        let currentJobId = null;
-        let eventSource = null;
+      let currentJobId = null;
+      let eventSource = null;
 
-        // Event Listeners
-        csvFileInput.addEventListener('change', handleFileSelect);
-        previewBtn.addEventListener('click', previewCSV);
-        uploadBtn.addEventListener('click', uploadCSV);
-        nextUploadBtn.addEventListener('click', resetUI);
+      // Event Listeners
+      csvFileInput.addEventListener("change", handleFileSelect);
+      previewBtn.addEventListener("click", previewCSV);
+      uploadBtn.addEventListener("click", uploadCSV);
+      nextUploadBtn.addEventListener("click", resetUI);
 
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                fileNameDiv.textContent = `Selected: ${file.name}`;
-                previewBtn.disabled = false;
-            } else {
-                fileNameDiv.textContent = '';
-                previewBtn.disabled = true;
-            }
+      function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+          fileNameDiv.textContent = `Selected: ${file.name}`;
+          previewBtn.disabled = false;
+        } else {
+          fileNameDiv.textContent = "";
+          previewBtn.disabled = true;
+        }
+      }
+
+      async function previewCSV() {
+        const file = csvFileInput.files[0];
+        if (!file) {
+          addLog("Please select a file first", "error");
+          return;
         }
 
-        async function previewCSV() {
+        const formData = new FormData();
+        formData.append("csvFile", file);
+
+        try {
+          showProgress(true, false);
+          addLog("Previewing CSV file...", "START");
+
+          const response = await fetch("/preview", {
+            method: "POST",
+            body: formData,
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            displayPreviewTable(result.rows);
+            previewSection.style.display = "block";
+            addLog(`Preview successful - ${result.count} rows shown`, "INSERT");
+          } else {
+            addLog(`Preview failed: ${result.error}`, "error");
+          }
+        } catch (error) {
+          addLog(`Preview error: ${error.message}`, "error");
+        } finally {
+          showProgress(false, false);
+        }
+      }
+
+        async function uploadCSV() {
             const file = csvFileInput.files[0];
             if (!file) {
                 addLog('Please select a file first', 'error');
@@ -308,53 +333,15 @@
             formData.append('csvFile', file);
 
             try {
-                showProgress(true, false);
-                addLog('Previewing CSV file...', 'START');
-
-                const response = await fetch('/preview', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    displayPreviewTable(result.rows);
-                    previewSection.style.display = 'block';
-                    addLog(`Preview successful - ${result.count} rows shown`, 'INSERT');
-                } else {
-                    addLog(`Preview failed: ${result.error}`, 'error');
-                }
-            } catch (error) {
-                addLog(`Preview error: ${error.message}`, 'error');
-            } finally {
-                showProgress(false, false);
-            }
-        }
-
-        async function uploadCSV() {
-            const file = csvFileInput.files[0];
-            if (!file) {
-                addLog('Please select a file first', 'error');
-                return;
-            }
-
-            try {
-                // Apply field configuration
-                await applyFieldConfiguration();
-                
-                const formData = new FormData();
-                formData.append('csvFile', file);
-
                 showProgress(true, true);
                 addLog('Uploading CSV file...', 'START');
 
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
 
-                const result = await response.json();
+          const result = await response.json();
 
                 if (response.ok) {
                     currentJobId = result.jobId;
@@ -377,226 +364,144 @@
                 showStatus(`Upload error: ${error.message}`, 'error');
             }
         }
-        
-        async function applyFieldConfiguration() {
-            // Get the selected field mode
-            const fieldMode = document.querySelector('input[name="fieldMode"]:checked').value;
-            
-            // Default configuration
-            let config = {
-                includeFields: [],
-                excludeFields: [],
-                renameFields: {},
-                transformFields: {},
-                recordFilter: null,
-                missingFieldHandling: {
-                    includeEmptyValues: true,
-                    defaultValue: null
-                },
-                requiredFields: [],
-                failOnMissingRequiredFields: false
-            };
-            
-            if (fieldMode === 'include') {
-                // Get selected fields
-                const selectedFields = Array.from(document.querySelectorAll('input[name="fieldSelect"]:checked'))
-                    .map(checkbox => checkbox.value);
-                config.includeFields = selectedFields;
-            } else if (fieldMode === 'exclude') {
-                // Get unselected fields
-                const unselectedFields = Array.from(document.querySelectorAll('input[name="fieldSelect"]:not(:checked)'))
-                    .map(checkbox => checkbox.value);
-                config.excludeFields = unselectedFields;
-            }
-            
-            // Update the server configuration
-            try {
-                const response = await fetch('/config', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(config)
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    addLog('Field configuration applied successfully', 'INSERT');
-                } else {
-                    addLog(`Configuration error: ${result.error}`, 'error');
-                }
-            } catch (error) {
-                addLog(`Configuration error: ${error.message}`, 'error');
-            }
+
+      function startProgressTracking() {
+        if (eventSource) {
+          eventSource.close();
         }
 
-        function startProgressTracking() {
-            if (eventSource) {
-                eventSource.close();
+        eventSource = new EventSource("/progress");
+
+        eventSource.onmessage = function (event) {
+          try {
+            const data = JSON.parse(event.data);
+
+            if (data.type === "connected") {
+              addLog("Connected to progress updates", "START");
+              return;
             }
 
-            eventSource = new EventSource('/progress');
+            // Update progress bar
+            if (data.percentage !== undefined) {
+              progressFill.style.width = `${data.percentage}%`;
+              progressText.textContent = `${data.percentage}% - ${data.message}`;
+            }
 
-            eventSource.onmessage = function(event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    
-                    if (data.type === 'connected') {
-                        addLog('Connected to progress updates', 'START');
-                        return;
-                    }
+            // Add log entry
+            if (data.message) {
+              addLog(data.message, data.percentage === 100 ? "DONE" : "INSERT");
+            }
 
-                    // Update progress bar
-                    if (data.percentage !== undefined) {
-                        progressFill.style.width = `${data.percentage}%`;
-                        progressText.textContent = `${data.percentage}% - ${data.message}`;
-                    }
+            // Check if job is complete
+            if (data.percentage === 100) {
+              eventSource.close();
+              showStatus("Migration completed successfully!", "success");
+              showNextUploadButton();
+            }
+          } catch (error) {
+            console.error("Error parsing progress data:", error);
+          }
+        };
 
-                    // Add log entry
-                    if (data.message) {
-                        addLog(data.message, data.percentage === 100 ? 'DONE' : 'INSERT');
-                    }
+        eventSource.onerror = function (event) {
+          console.error("SSE connection error:", event);
+          addLog("Progress tracking connection error", "error");
+        };
+      }
 
-                    // Check if job is complete
-                    if (data.percentage === 100) {
-                        eventSource.close();
-                        showStatus('Migration completed successfully!', 'success');
-                        showNextUploadButton();
-                    }
-                } catch (error) {
-                    console.error('Error parsing progress data:', error);
-                }
-            };
-
-            eventSource.onerror = function(event) {
-                console.error('SSE connection error:', event);
-                addLog('Progress tracking connection error', 'error');
-            };
+      function displayPreviewTable(rows) {
+        if (!rows || rows.length === 0) {
+          previewTable.innerHTML = "<p>No data to display</p>";
+          return;
         }
 
-        function displayPreviewTable(rows) {
-            if (!rows || rows.length === 0) {
-                previewTable.innerHTML = '<p>No data to display</p>';
-                return;
-            }
+        const headers = Object.keys(rows[0]);
+        let tableHTML = '<table class="preview-table"><thead><tr>';
 
-            const headers = Object.keys(rows[0]);
-            let tableHTML = '<table class="preview-table"><thead><tr>';
+        // Add row number header
+        tableHTML += "<th>#</th>";
 
-            // Add row number header
-            tableHTML += '<th>#</th>';
-            
-            // Add headers
-            headers.forEach(header => {
-                tableHTML += `<th>${header}</th>`;
-            });
-            tableHTML += '</tr></thead><tbody>';
+        // Add headers
+        headers.forEach((header) => {
+          tableHTML += `<th>${header}</th>`;
+        });
+        tableHTML += "</tr></thead><tbody>";
 
-            // Add rows with row numbers
-            rows.forEach((row, index) => {
-                tableHTML += '<tr>';
-                // Add row number
-                tableHTML += `<td>${index + 1}</td>`;
-                headers.forEach(header => {
-                    const value = row[header] || '';
-                    tableHTML += `<td>${value}</td>`;
-                });
-                tableHTML += '</tr>';
-            });
+        // Add rows with row numbers
+        rows.forEach((row, index) => {
+          tableHTML += "<tr>";
+          // Add row number
+          tableHTML += `<td>${index + 1}</td>`;
+          headers.forEach((header) => {
+            const value = row[header] || "";
+            tableHTML += `<td>${value}</td>`;
+          });
+          tableHTML += "</tr>";
+        });
 
             tableHTML += '</tbody></table>';
             previewTable.innerHTML = tableHTML;
-            
-            // Populate field selection checkboxes
-            populateFieldCheckboxes(headers);
-        }
-        
-        function populateFieldCheckboxes(headers) {
-            const fieldCheckboxes = document.getElementById('fieldCheckboxes');
-            fieldCheckboxes.innerHTML = '';
-            
-            headers.forEach(header => {
-                const checkboxDiv = document.createElement('div');
-                checkboxDiv.style.margin = '5px 0';
-                checkboxDiv.innerHTML = `
-                    <label>
-                        <input type="checkbox" name="fieldSelect" value="${header}" checked> ${header}
-                    </label>
-                `;
-                fieldCheckboxes.appendChild(checkboxDiv);
-            });
-            
-            // Add event listeners to radio buttons
-            document.querySelectorAll('input[name="fieldMode"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const fieldSelection = document.getElementById('fieldSelection');
-                    if (this.value !== 'all') {
-                        fieldSelection.style.display = 'block';
-                    } else {
-                        fieldSelection.style.display = 'none';
-                    }
-                });
-            });
         }
 
-        function addLog(message, type = '') {
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-entry ${type}`;
-            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
-            logsContainer.appendChild(logEntry);
-            
-            // Scroll to bottom
-            logsContainer.scrollTop = logsContainer.scrollHeight;
+      function addLog(message, type = "") {
+        const logEntry = document.createElement("div");
+        logEntry.className = `log-entry ${type}`;
+        logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+        logsContainer.appendChild(logEntry);
+
+        // Scroll to bottom
+        logsContainer.scrollTop = logsContainer.scrollHeight;
+      }
+
+      function showProgress(showProgress, showUpload) {
+        progressSection.style.display = showProgress ? "block" : "none";
+        uploadBtn.disabled = showUpload;
+      }
+
+      function showStatus(message, type) {
+        statusMessage.textContent = message;
+        statusMessage.className =
+          type === "success" ? "success-message" : "error-message";
+        statusSection.style.display = "block";
+      }
+
+      function showNextUploadButton() {
+        nextUploadBtn.style.display = "inline-block";
+      }
+
+      function resetUI() {
+        // Reset file input
+        csvFileInput.value = "";
+        fileNameDiv.textContent = "";
+        previewBtn.disabled = true;
+
+        // Hide sections
+        previewSection.style.display = "none";
+        progressSection.style.display = "none";
+        statusSection.style.display = "none";
+        nextUploadBtn.style.display = "none";
+
+        // Clear logs
+        logsContainer.innerHTML = "";
+
+        // Reset progress
+        progressFill.style.width = "0%";
+        progressText.textContent = "0%";
+
+        // Show upload section
+        uploadSection.style.display = "block";
+
+        // Close SSE connection if open
+        if (eventSource) {
+          eventSource.close();
+          eventSource = null;
         }
 
-        function showProgress(showProgress, showUpload) {
-            progressSection.style.display = showProgress ? 'block' : 'none';
-            uploadBtn.disabled = showUpload;
-        }
+        currentJobId = null;
+      }
 
-        function showStatus(message, type) {
-            statusMessage.textContent = message;
-            statusMessage.className = type === 'success' ? 'success-message' : 'error-message';
-            statusSection.style.display = 'block';
-        }
-
-        function showNextUploadButton() {
-            nextUploadBtn.style.display = 'inline-block';
-        }
-
-        function resetUI() {
-            // Reset file input
-            csvFileInput.value = '';
-            fileNameDiv.textContent = '';
-            previewBtn.disabled = true;
-            
-            // Hide sections
-            previewSection.style.display = 'none';
-            progressSection.style.display = 'none';
-            statusSection.style.display = 'none';
-            nextUploadBtn.style.display = 'none';
-            
-            // Clear logs
-            logsContainer.innerHTML = '';
-            
-            // Reset progress
-            progressFill.style.width = '0%';
-            progressText.textContent = '0%';
-            
-            // Show upload section
-            uploadSection.style.display = 'block';
-            
-            // Close SSE connection if open
-            if (eventSource) {
-                eventSource.close();
-                eventSource = null;
-            }
-            
-            currentJobId = null;
-        }
-
-        // Add initial log
-        addLog('System ready. Select a CSV file to begin.', 'START');
+      // Add initial log
+      addLog("System ready. Select a CSV file to begin.", "START");
     </script>
-</body>
+  </body>
 </html>
