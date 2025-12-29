@@ -6,15 +6,16 @@
  */
 
 module.exports = {
-  "includeFields": [],
-  "excludeFields": [
-    "Index",
-    "First Name",
-    "Last Name",
-    "Company",
+  "includeFields": [
+    "Education",
+    "JoiningYear",
     "City",
-    "Phone 1"
+    "PaymentTier",
+    "Age",
+    "Gender",
+    "EverBenched"
   ],
+  "excludeFields": [],
   "renameFields": {},
   "transformFields": {},
   "recordFilter": null,
