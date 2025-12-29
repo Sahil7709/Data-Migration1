@@ -1,187 +1,107 @@
-# High-Performance CSV to MongoDB Migration System
+# Data Migration UI
 
-A high-performance web interface for uploading CSV files with automatic data migration triggering. This application provides a user-friendly UI to upload CSV files, which are then automatically processed by the optimized data migration engine capable of handling 2000+ records per second.
+A simple UI for uploading CSV files with automatic migration triggering to MongoDB.
 
 ## Features
 
-- **High Performance**: Optimized for 2000+ records per second throughput
-- **Simple UI**: Clean and intuitive interface for uploading CSV files
-- **Enhanced Security**: Advanced CSV validation to prevent malicious uploads and injection attacks
-- **File Validation**: Validates file type (CSV only) and size limits
-- **Content Validation**: Checks CSV content to prevent malicious files
-- **Large File Support**: Supports files up to 500MB
-- **Automatic Migration**: Triggers the CSV migration process when files are uploaded
-- **Single Trigger Point**: Migration is triggered only once after successful upload
-- **Progress Tracking**: Shows upload progress in the UI
-- **Comprehensive Logging**: Detailed logging with file rotation and monitoring
-- **Docker Ready**: Production-ready Docker configuration with security best practices
+- CSV file upload with preview
+- Real-time migration progress tracking
+- Job management and audit logging
+- Admin dashboard for monitoring
 
 ## Prerequisites
 
 - Node.js 16+ 
-- The `csv-migration` project must exist in the parent directory (../csv-migration)
+- MongoDB (local installation, Docker, or MongoDB Atlas)
 
-## Performance Optimizations
+## Setup
 
-This system is optimized for high throughput CSV to MongoDB migration:
-
-- **Connection Pooling**: MongoDB connection pool increased to 50 connections
-- **Batch Processing**: Optimized batch size of 5000 records per batch
-- **Compression**: Network compression enabled for better performance
-- **Write Concern**: Optimized for high throughput (w:1, j:false)
-- **Memory Efficiency**: Streaming CSV processing to minimize memory usage
-
-## Security Features
-
-- **CSV Injection Prevention**: Blocks formula injection and malicious content
-- **Content Validation**: Advanced validation of CSV structure and content
-- **File Type Verification**: Ensures only valid CSV files are processed
-- **Size Limits**: Configurable file size limits to prevent abuse
-- **Non-root Container**: Runs as non-root user in Docker for security
-
-## Installation
-
-1. Clone the repository:
-   ```bash
-   git clone <your-repository-url>
-   cd data-migration
-   ```
-2. Install dependencies:
+1. **Install dependencies:**
    ```bash
    npm install
    ```
-3. Create a `.env` file in the root directory with your configuration:
-   ```env
-   # Database Configuration
-   MONGO_URI=mongodb+srv://username:password@cluster.your-cluster.mongodb.net
-   DB_NAME=your_database_name
-   COLLECTION_NAME=your_collection_name
-   BATCH_SIZE=5000
+
+2. **Set up MongoDB:**
+   Choose one of the following options:
    
-   # Server Configuration
-   PORT=3000
+   - **Option 1: MongoDB Atlas (Recommended)**
+     - Sign up at [MongoDB Atlas](https://www.mongodb.com/atlas)
+     - Create a free cluster and database user
+     - Update the `MONGO_URI` in your `.env` file with your connection string
    
-   # CSV Migration Configuration
-   CSV_FILE_PATH=./data.csv
+   - **Option 2: Local MongoDB**
+     - Install MongoDB Community Server from [MongoDB Download Center](https://www.mongodb.com/try/download/community)
+     - Start MongoDB service
+   
+   - **Option 3: Docker**
+     - Make sure Docker Desktop is running
+     - Start MongoDB: `docker run -d -p 27017:27017 --name mongodb mongo:6.0`
+
+3. **Configure environment:**
+   - Copy the sample configuration from SETUP.md
+   - Create a `.env` file with your MongoDB connection string
+
+4. **Check MongoDB connection:**
+   ```bash
+   npm run check-mongo
    ```
 
-   **Important**: Do not commit your `.env` file to version control. It's included in `.gitignore` for security.
+## Running the Application
+
+The application requires both a server and a worker process to function properly:
+
+1. **Start the server:**
+   ```bash
+   npm run dev
+   # or
+   nodemon server.js
+   ```
+
+2. **In a separate terminal, start the worker:**
+   ```bash
+   npm run worker
+   # or
+   node worker.js
+   ```
 
 ## Usage
 
-1. Start the server:
-   ```bash
-   npm start
-   ```
-   
-   Or for development with auto-restart:
-   ```bash
-   npm run dev
-   ```
+1. Open your browser to `http://localhost:3000`
+2. Upload a CSV file using the UI
+3. Preview the data before confirming migration
+4. Monitor migration progress in real-time
+5. Check admin dashboard for job status and audit logs
 
-2. Open your browser and go to `http://localhost:3000`
+## API Endpoints
 
-3. Upload your CSV files using the UI
+- `POST /upload` - Upload and queue CSV files for migration
+- `POST /preview` - Preview CSV file content without importing
+- `GET /progress` - Server-Sent Events for real-time progress updates
+- `GET /admin/jobs` - Admin endpoint for job management
+- `GET /health` - Health check endpoint
 
-## How It Works
+## Architecture
 
-1. The application provides a web UI for uploading CSV files
-2. Files are stored in the `uploads` directory with unique names
-3. When a file is uploaded via the UI:
-   - Extension is validated (.csv only)
-   - Content is validated to ensure it's a proper CSV file
-   - Migration process is triggered automatically
-4. The migration process uses the existing `csv-migration` project to import data into MongoDB
-
-## Security Features
-
-- **Extension Validation**: Only files with .csv extension are accepted
-- **Content Validation**: Checks that uploaded files contain valid CSV content (not binary or malicious files)
-- **Size Limit**: Files are limited to 500MB to prevent resource exhaustion
-- **Single Trigger Point**: Migration is triggered only once after successful upload, avoiding race conditions
-
-## Configuration
-
-- **Port**: Set via the `PORT` environment variable (default: 3000)
-- **File Size Limit**: 500MB (can be changed in server.js)
-- **Upload Directory**: Files are stored in the `uploads` directory
-
-## Security Considerations
-
-- File type validation is performed to ensure only CSV files are accepted
-- Content validation prevents malicious files from being processed
-- File size is limited to prevent excessive resource usage
-- Files are stored with unique names to prevent overwrites
-- Migration is triggered only once to avoid race conditions
-
-## CI/CD Pipeline
-
-The project includes a GitHub Actions workflow that:
-- Runs tests on multiple Node.js versions
-- Builds and deploys the application when changes are pushed to main/master
-- Creates and pushes a Docker image to DockerHub
-- Deploys to a container service
-
-## Docker Support
-
-The project includes a Dockerfile for containerization:
-```bash
-# Build the Docker image
-docker build -t csv-upload-ui .
-
-# Run the container
-docker run -p 3000:3000 csv-upload-ui
-```
-
-## Environment Variables
-
-- `PORT`: Port number for the server (default: 3000)
-- All other environment variables from the `csv-migration` project can be used to configure the migration process
-
-## Project Structure
-
-```
-├── migrate/
-│   └── migrate.js          # Migration script for CSV to MongoDB
-├── public/
-│   └── index.html          # Simple UI for CSV uploads
-├── logs/                   # Application logs (not in repo)
-├── uploads/                # Directory for uploaded CSV files (not in repo)
-├── .env                   # Environment variables (not in repo)
-├── .env.production        # Production environment variables
-├── .gitignore            # Git ignore file
-├── DEPLOYMENT.md         # Deployment documentation
-├── Dockerfile            # Docker configuration
-├── docker-compose.yml    # Docker Compose configuration
-├── README.md             # This file
-├── package.json          # Dependencies and scripts
-└── server.js            # Main server file
-```
-
-## Deployment
-
-### Docker Deployment (Recommended)
-
-1. Use the provided `docker-compose.yml` for easy deployment
-2. Run `docker-compose up -d` to start the services
-3. The application will be available at `http://localhost:3000`
-
-### Direct Node.js Deployment
-
-1. Install dependencies: `npm install`
-2. Configure environment variables in `.env`
-3. Start the application: `npm start`
-
-## Monitoring and Logging
-
-- **Application logs**: Stored in `logs/` directory
-- **Migration logs**: Detailed migration logs in `logs/migration-*.log`
-- **Error logs**: Errors are captured in `logs/error.log`
-- **Log rotation**: Automatic rotation with 5MB size limit and 5 file retention
+- **Server**: Handles file uploads, API requests, and serves the UI
+- **Worker**: Processes queued migration jobs and writes to MongoDB
+- **Queue**: MongoDB-based job queue for processing CSV files
+- **Models**: Job, Record, and AuditLog for tracking migration status
 
 ## Troubleshooting
 
-- If the migration process doesn't start, ensure the `csv-migration` project exists in the parent directory
-- Check that MongoDB connection settings are properly configured in environment variables
-- Monitor the console output for any error messages during file upload or migration
-- Check log files in the `logs/` directory for detailed error information
+**Common Issues:**
+
+1. **MongoDB Connection Issues**: 
+   - Ensure MongoDB is running
+   - Check your connection string in `.env`
+   - Refer to SETUP.md for detailed instructions
+
+2. **Application Requires Both Server and Worker**:
+   - Both processes must be running for full functionality
+   - Server handles uploads and UI, worker processes jobs
+
+3. **Worker Service Not Running**:
+   - Data won't be migrated if the worker service isn't running
+   - Always run both `npm run dev` and `npm run worker`
+
+For detailed setup instructions, refer to [SETUP.md](SETUP.md).

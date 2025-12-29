@@ -7,32 +7,36 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb+srv://root:root@migrate.dhujcbq.mongodb.net/?appName=migrate
-      - DB_NAME=DataMigration
-      - COLLECTION_NAME=MigratedData
-      - BATCH_SIZE=5000
+      - MONGO_URI=mongodb://mongo:27017/csv-migration
       - PORT=3000
     depends_on:
       - mongo
     volumes:
-      - uploads:/app/uploads
-      - logs:/app/logs
+      - uploads_volume:/app/uploads
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+
+  worker:
+    build: .
+    command: npm run worker
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/csv-migration
+    depends_on:
+      - mongo
+    volumes:
+      - uploads_volume:/app/uploads
+    restart: unless-stopped
 
   mongo:
     image: mongo:6.0
     ports:
       - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=root
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok'
+
+
+
+volumes:
+  uploads_volume:
+  mongo_data:
