@@ -1,5 +1,5 @@
-require('dotenv').config();
 const express = require('express');
+require('dotenv').config();
 const cors = require('cors');
 const path = require('path');
 const mongoose = require('mongoose');
@@ -12,6 +12,7 @@ const previewRoute = require('./routes/preview.route');
 const uploadRoute = require('./routes/upload.route');
 const progressRoute = require('./routes/progress.route');
 const adminRoute = require('./routes/admin.route');
+const configRoute = require('./routes/config.route');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +31,7 @@ app.use('/preview', previewRoute);
 app.use('/upload', uploadRoute);
 app.use('/progress', progressRoute);
 app.use('/admin', adminRoute);
+app.use('/config', configRoute);
 
 // Root route - serve the UI
 app.get('/', (req, res) => {
@@ -45,7 +47,7 @@ app.get('/health', (req, res) => {
 
 // Connect to MongoDB
 async function connectDB() {
-  const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/csv-migration';
+  const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/DataMigration';
   
   // MongoDB connection options for better reliability
   const options = {

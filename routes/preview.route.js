@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const readline = require('readline');
+const { applyFieldFilterToRecords } = require('../utils/field-filter.util');
 
 const router = express.Router();
 
@@ -120,12 +121,15 @@ router.post('/', upload.single('csvFile'), async (req, res) => {
       return result;
     }
     
+    // Apply field filtering to preview results
+    const filteredResults = applyFieldFilterToRecords(results);
+    
     cleanup();
     
     res.json({
       success: true,
-      rows: results,
-      count: results.length
+      rows: filteredResults,
+      count: filteredResults.length
     });
     
   } catch (error) {

@@ -2,6 +2,21 @@
 
 A simple UI for uploading CSV files with automatic migration triggering to MongoDB.
 
+## Field Filtering Configuration
+
+This tool now supports field filtering to include, exclude, rename, or transform fields during migration. See `config/field-filter.config.js` for configuration options.
+
+To configure field filtering:
+
+1. Copy `config/field-filter.example.js` to `config/field-filter.config.js`
+2. Modify the configuration according to your needs
+3. The configuration supports:
+   - Including specific fields only (whitelist)
+   - Excluding specific fields (blacklist)
+   - Renaming fields during migration
+   - Transforming field values
+   - Filtering records based on custom criteria
+
 ## Features
 
 - CSV file upload with preview
@@ -86,6 +101,10 @@ The application requires both a server and a worker process to function properly
 - **Worker**: Processes queued migration jobs and writes to MongoDB
 - **Queue**: MongoDB-based job queue for processing CSV files
 - **Models**: Job, Record, and AuditLog for tracking migration status
+
+## Database Configuration
+
+By default, the application connects to the 'DataMigration' database. You can override this by setting the MONGO_URI environment variable.
 
 ## Troubleshooting
 

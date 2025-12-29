@@ -218,6 +218,26 @@
         <div class="preview-section" id="previewSection">
             <h2>CSV Preview (First 10 Rows)</h2>
             <div id="previewTable"></div>
+            
+            <h3 style="margin-top: 20px;">Field Configuration</h3>
+            <div id="fieldConfigSection">
+                <div style="margin-bottom: 15px;">
+                    <label>
+                        <input type="radio" name="fieldMode" value="all" checked> Include all fields
+                    </label><br>
+                    <label>
+                        <input type="radio" name="fieldMode" value="include"> Include only selected fields
+                    </label><br>
+                    <label>
+                        <input type="radio" name="fieldMode" value="exclude"> Exclude selected fields
+                    </label>
+                </div>
+                <div id="fieldSelection" style="display: none;">
+                    <p>Select fields to include/exclude:</p>
+                    <div id="fieldCheckboxes" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;"></div>
+                </div>
+            </div>
+            
             <button id="uploadBtn" class="upload-btn">Upload to MongoDB</button>
         </div>
         
@@ -319,10 +339,13 @@
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('csvFile', file);
-
             try {
+                // Apply field configuration
+                await applyFieldConfiguration();
+                
+                const formData = new FormData();
+                formData.append('csvFile', file);
+
                 showProgress(true, true);
                 addLog('Uploading CSV file...', 'START');
 
@@ -352,6 +375,58 @@
                 addLog(`Upload error: ${error.message}`, 'error');
                 showProgress(false, false);
                 showStatus(`Upload error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function applyFieldConfiguration() {
+            // Get the selected field mode
+            const fieldMode = document.querySelector('input[name="fieldMode"]:checked').value;
+            
+            // Default configuration
+            let config = {
+                includeFields: [],
+                excludeFields: [],
+                renameFields: {},
+                transformFields: {},
+                recordFilter: null,
+                missingFieldHandling: {
+                    includeEmptyValues: true,
+                    defaultValue: null
+                },
+                requiredFields: [],
+                failOnMissingRequiredFields: false
+            };
+            
+            if (fieldMode === 'include') {
+                // Get selected fields
+                const selectedFields = Array.from(document.querySelectorAll('input[name="fieldSelect"]:checked'))
+                    .map(checkbox => checkbox.value);
+                config.includeFields = selectedFields;
+            } else if (fieldMode === 'exclude') {
+                // Get unselected fields
+                const unselectedFields = Array.from(document.querySelectorAll('input[name="fieldSelect"]:not(:checked)'))
+                    .map(checkbox => checkbox.value);
+                config.excludeFields = unselectedFields;
+            }
+            
+            // Update the server configuration
+            try {
+                const response = await fetch('/config', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(config)
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    addLog('Field configuration applied successfully', 'INSERT');
+                } else {
+                    addLog(`Configuration error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addLog(`Configuration error: ${error.message}`, 'error');
             }
         }
 
@@ -431,6 +506,37 @@
 
             tableHTML += '</tbody></table>';
             previewTable.innerHTML = tableHTML;
+            
+            // Populate field selection checkboxes
+            populateFieldCheckboxes(headers);
+        }
+        
+        function populateFieldCheckboxes(headers) {
+            const fieldCheckboxes = document.getElementById('fieldCheckboxes');
+            fieldCheckboxes.innerHTML = '';
+            
+            headers.forEach(header => {
+                const checkboxDiv = document.createElement('div');
+                checkboxDiv.style.margin = '5px 0';
+                checkboxDiv.innerHTML = `
+                    <label>
+                        <input type="checkbox" name="fieldSelect" value="${header}" checked> ${header}
+                    </label>
+                `;
+                fieldCheckboxes.appendChild(checkboxDiv);
+            });
+            
+            // Add event listeners to radio buttons
+            document.querySelectorAll('input[name="fieldMode"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const fieldSelection = document.getElementById('fieldSelection');
+                    if (this.value !== 'all') {
+                        fieldSelection.style.display = 'block';
+                    } else {
+                        fieldSelection.style.display = 'none';
+                    }
+                });
+            });
         }
 
         function addLog(message, type = '') {

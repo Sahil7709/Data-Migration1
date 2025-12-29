@@ -5,12 +5,13 @@ const { JobModel } = require('./models/Job');
 const { RecordModel } = require('./models/Record');
 const { AuditLogModel } = require('./models/AuditLog');
 const { EventEmitter } = require('events');
+const { applyFieldFilterToRecords } = require('./utils/field-filter.util');
 
 require('dotenv').config();
 const mongoose = require('mongoose');
 
 async function connectDB() {
-  const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/csv-migration';
+  const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/DataMigration';
 
   if (!mongoUri) {
     console.error('MONGO_URI not defined');
@@ -237,8 +238,11 @@ class CSVWorker {
     if (chunk.length === 0) return { processed: true, chunkIndex, count: 0 };
     
     try {
+      // Apply field filtering to the chunk
+      const filteredChunk = applyFieldFilterToRecords(chunk);
+      
       // Insert records in bulk with ordered: false to handle duplicates
-      const result = await RecordModel.insertMany(chunk, { ordered: false });
+      const result = await RecordModel.insertMany(filteredChunk, { ordered: false });
       
       // Log INSERT action
       await AuditLogModel.create({
